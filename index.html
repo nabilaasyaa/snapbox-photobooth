@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Snapbox — Photobooth Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ====================== FILM STRIP DECOR (ambient) ====================== -->
+<div class="sprocket-rail sprocket-rail--top" aria-hidden="true"></div>
+<div class="sprocket-rail sprocket-rail--bottom" aria-hidden="true"></div>
+
+<!-- ====================== TOP BAR ====================== -->
+<header class="topbar">
+  <div class="topbar__brand" id="brandMark">
+    <span class="topbar__logo-dot" id="topbarDot"></span>
+    <img id="topbarLogoImg" src="" alt="Logo" style="display:none;height:28px;max-width:80px;object-fit:contain;border-radius:4px;vertical-align:middle;margin-right:6px;">
+    <span id="brandNameLabel">SNAPBOX</span>
+  </div>
+  <nav class="topbar__steps" id="stepTracker" aria-label="Tahapan photobooth">
+    <button class="step" data-step="branding"><span class="step__no">I</span>Branding</button>
+    <button class="step" data-step="frame"><span class="step__no">II</span>Frame</button>
+    <button class="step" data-step="camera"><span class="step__no">III</span>Jepret</button>
+    <button class="step" data-step="edit"><span class="step__no">IV</span>Edit</button>
+    <button class="step" data-step="checkout"><span class="step__no">V</span>Bayar</button>
+    <button class="step" data-step="result"><span class="step__no">VI</span>Hasil</button>
+  </nav>
+<div class="topbar__actions">
+  <button class="topbar__admin-toggle" id="adminToggle" title="Mode Admin / Branding">⚙ Admin</button>
+</div>
+</header>
+
+<main id="app">
+
+  <!-- ====================== SCREEN 0: WELCOME ====================== -->
+  <section class="screen screen--welcome is-active" data-screen="welcome" style="position:relative;overflow:hidden;">
+    <!-- bg overlay applied via JS when bgDataUrl is set -->
+    <div id="welcomeBgOverlay" style="position:absolute;inset:0;background-size:cover;background-position:center;background-repeat:no-repeat;z-index:0;transition:opacity .4s;opacity:0;pointer-events:none;"></div>
+    <div class="welcome" style="position:relative;z-index:1;">
+      <!-- logo shown when logoDataUrl is set -->
+      
+      <p class="welcome__eyebrow">Photobooth digital · custom branding</p>
+      <h1 class="welcome__title">Jepret. Edit.<br><em>Bawa pulang</em> momennya.</h1>
+      <p class="welcome__sub">Pilih frame, atur kamera, tambahkan filter &amp; stiker, lalu unduh atau kirim ke email — semua dari satu layar sentuh.</p>
+      <button class="btn btn--primary btn--xl" id="btnStart">Mulai Sesi Foto →</button>
+      <div class="welcome__meta">
+        <div class="welcome__meta-item"><strong>3</strong><span>detik timer</span></div>
+        <div class="welcome__meta-item"><strong>JPG/PNG</strong><span>format unduh</span></div>
+        <div class="welcome__meta-item"><strong>QR</strong><span>ambil di HP</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== SCREEN 1: BRANDING / CUSTOMIZER ====================== -->
+  <section class="screen" data-screen="branding">
+    <div class="panel-head">
+      <h2>Sesuaikan tampilan booth</h2>
+      <p>Ubah warna, logo, dan nama event — semua langsung terlihat di seluruh layar.</p>
+    </div>
+
+    <div class="branding-grid">
+      <div class="branding-card">
+        <label class="field-label">Nama brand / event</label>
+        <input type="text" id="inputBrandName" maxlength="22" placeholder="contoh: Wedding Naya & Dipta">
+
+        <label class="field-label">Warna aksen</label>
+        <div class="swatch-row" id="swatchRow"></div>
+        <input type="color" id="inputCustomColor" class="color-pick" value="#ff5b2e">
+
+        <label class="field-label">Logo brand (opsional)</label>
+        <div class="upload-drop" id="logoDrop">
+          <input type="file" id="inputLogo" accept="image/*" hidden>
+          <span id="logoDropLabel">Klik atau seret logo .png di sini</span>
+        </div>
+
+        <label class="field-label">Latar layar sambutan</label>
+        <div class="upload-drop" id="bgDrop">
+          <input type="file" id="inputBg" accept="image/*" hidden>
+          <span id="bgDropLabel">Klik atau seret gambar latar (opsional)</span>
+        </div>
+
+        <label class="field-label">Pesan sambutan</label>
+        <textarea id="inputTagline" maxlength="120" rows="2" placeholder="contoh: Terima kasih telah merayakan bersama kami!"></textarea>
+
+        <label class="field-label">QRIS pembayaran (gambar QRIS toko/usaha milikmu)</label>
+        <div class="upload-drop" id="qrisDrop">
+          <input type="file" id="inputQris" accept="image/*" hidden>
+          <span id="qrisDropLabel">Klik atau seret gambar QRIS asli di sini</span>
+        </div>
+        <p class="hint-text">Belum punya QRIS usaha? Daftar gratis lewat aplikasi GoPay Merchant, DANA Bisnis, OVO Merchant, atau langsung ke bank. Tanpa ini, sistem akan menampilkan QR contoh (bukan untuk pembayaran sungguhan).</p>
+      </div>
+
+      <div class="branding-preview">
+        <span class="field-label">Pratinjau langsung</span>
+        <div class="mini-preview" id="miniPreview">
+          <div class="mini-preview__top">
+            <span class="mini-preview__dot"></span>
+            <span id="miniPreviewBrand">SNAPBOX</span>
+          </div>
+          <div class="mini-preview__body">
+            <p id="miniPreviewTitle">Jepret. Edit. Bawa pulang momennya.</p>
+            <p id="miniPreviewTag" class="mini-preview__tag"></p>
+          </div>
+        </div>
+        <p class="hint-text">Pengaturan ini tersimpan otomatis di perangkat ini dan berlaku ke seluruh sesi.</p>
+      </div>
+    </div>
+
+  <div class="screen-nav">
+    <button class="btn btn--ghost" data-nav-back>← Kembali</button>
+    <button class="btn btn--outline" data-nav="report">📊 Lihat Laporan Transaksi</button>
+    <button class="btn btn--primary" data-nav="frame">Lanjut pilih frame →</button>
+  </div>
+  </section>
+
+  <!-- ====================== SCREEN 2: FRAME SELECTOR ====================== -->
+  <section class="screen" data-screen="frame">
+    <div class="panel-head">
+      <h2>Pilih frame foto</h2>
+      <p>Pilih satu gaya bingkai, atau tambahkan bingkai custom milikmu sendiri.</p>
+    </div>
+
+    <div class="frame-toolbar">
+      <div class="layout-toggle" id="layoutToggle">
+        <button class="layout-toggle__btn is-active" data-layout="1">1 foto</button>
+        <button class="layout-toggle__btn" data-layout="2">2 foto</button>
+        <button class="layout-toggle__btn" data-layout="3">Strip 3 foto</button>
+        <button class="layout-toggle__btn" data-layout="4">Grid 4 foto</button>
+      </div>
+      <button class="btn btn--outline btn--sm" id="btnAddFrame">+ Tambah frame custom</button>
+      <input type="file" id="inputAddFrame" accept="image/*" hidden multiple>
+    </div>
+
+    <div class="frame-grid" id="frameGrid"></div>
+
+    <div class="screen-nav">
+      <button class="btn btn--ghost" data-nav-back>← Kembali</button>
+      <button class="btn btn--primary" data-nav="camera" id="btnToCamera" disabled>Lanjut ke kamera →</button>
+    </div>
+  </section>
+
+  <!-- ====================== SCREEN 3: CAMERA ====================== -->
+  <section class="screen" data-screen="camera">
+    <div class="camera-layout">
+
+      <div class="camera-stage">
+        <div class="camera-viewport" id="cameraViewport">
+          <video id="videoPreview" autoplay playsinline muted></video>
+          <canvas id="overlayCanvas"></canvas>
+          <div class="flash-pop" id="flashPop" aria-hidden="true"></div>
+          <div class="countdown-num" id="countdownNum" aria-hidden="true"></div>
+          <div class="camera-status" id="cameraStatus">Mengaktifkan kamera…</div>
+          <div class="shot-progress" id="shotProgress"></div>
+        </div>
+
+        <div class="camera-controls">
+          <button class="iconbtn" id="btnMirror" title="Cerminkan kamera">
+            <svg viewBox="0 0 24 24"><path d="M12 2v20M5 6l-3 6 3 6M19 6l3 6-3 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Mirror
+          </button>
+          <button class="iconbtn" id="btnFlashToggle" title="Nyalakan flash layar">
+            <svg viewBox="0 0 24 24"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+            Flash
+          </button>
+          <div class="iconbtn iconbtn--timer-group" id="timerGroup">
+            <button class="timer-pill is-active" data-timer="3">3s</button>
+            <button class="timer-pill" data-timer="5">5s</button>
+            <button class="timer-pill" data-timer="0">Manual</button>
+          </div>
+          <select class="iconbtn iconbtn--select" id="liveEffectSelect" title="Efek langsung kamera">
+            <option value="none">Efek: Normal</option>
+            <option value="bw">Efek: Hitam Putih</option>
+            <option value="warm">Efek: Hangat</option>
+            <option value="cool">Efek: Sejuk</option>
+            <option value="sepia">Efek: Sepia</option>
+            <option value="vivid">Efek: Vivid</option>
+          </select>
+        </div>
+
+        <button class="btn btn--primary btn--xl btn--shutter" id="btnShutter">📸 Ambil Foto</button>
+        <p class="hint-text" id="shotCounterLabel"></p>
+      </div>
+
+      <aside class="camera-sidebar">
+        <h3>Bingkai terpilih</h3>
+        <div class="chosen-frame-preview" id="chosenFramePreview"></div>
+        <button class="btn btn--ghost btn--sm" data-nav="frame">Ganti frame</button>
+
+        <h3>Hasil jepretan</h3>
+        <div class="thumb-row" id="thumbRow">
+          <p class="hint-text">Belum ada foto. Tekan tombol jepret untuk mulai.</p>
+        </div>
+      </aside>
+
+    </div>
+
+    <div class="screen-nav">
+      <button class="btn btn--ghost" data-nav-back>← Kembali</button>
+      <button class="btn btn--primary" id="btnToEdit" data-nav="edit" disabled>Lanjut ke edit →</button>
+    </div>
+  </section>
+
+  <!-- ====================== SCREEN 4: EDIT (RETAKE / FILTER / STICKER) ====================== -->
+  <section class="screen" data-screen="edit">
+    <div class="edit-layout">
+
+      <div class="edit-canvas-wrap">
+        <canvas id="editCanvas"></canvas>
+        <div class="sticker-layer" id="stickerLayer"></div>
+      </div>
+
+      <aside class="edit-sidebar">
+
+        <div class="edit-tabs" id="editTabs">
+          <button class="edit-tab is-active" data-tab="filter">Filter</button>
+          <button class="edit-tab" data-tab="sticker">Stiker</button>
+          <button class="edit-tab" data-tab="text">Teks</button>
+          <button class="edit-tab" data-tab="retake">Retake</button>
+        </div>
+
+        <div class="edit-panel" data-panel="filter">
+          <p class="hint-text">Pilih nuansa warna untuk hasil akhir.</p>
+          <div class="filter-grid" id="filterGrid"></div>
+          <label class="field-label">Kecerahan</label>
+          <input type="range" id="rangeBrightness" min="60" max="140" value="100">
+          <label class="field-label">Kontras</label>
+          <input type="range" id="rangeContrast" min="60" max="140" value="100">
+          <label class="field-label">Saturasi</label>
+          <input type="range" id="rangeSaturate" min="0" max="200" value="100">
+        </div>
+
+        <div class="edit-panel" data-panel="sticker" hidden>
+          <p class="hint-text">Klik stiker untuk menambah, lalu seret di foto. Klik 2x untuk hapus.</p>
+          <div class="sticker-grid" id="stickerPalette"></div>
+        </div>
+
+        <div class="edit-panel" data-panel="text" hidden>
+          <p class="hint-text">Tambahkan teks bebas — judul, nama, atau ucapan.</p>
+          <input type="text" id="inputStickerText" placeholder="Tulis teks…" maxlength="40">
+          <div class="text-style-row">
+            <select id="selectTextFont">
+              <option value="'Fraunces', serif">Fraunces</option>
+              <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+              <option value="'JetBrains Mono', monospace">Mono</option>
+            </select>
+            <input type="color" id="inputTextColor" value="#ffffff">
+          </div>
+          <button class="btn btn--outline btn--sm" id="btnAddText">+ Tambahkan ke foto</button>
+        </div>
+
+        <div class="edit-panel" data-panel="retake" hidden>
+          <p class="hint-text">Kurang pas? Pilih foto untuk diambil ulang.</p>
+          <div class="thumb-row" id="retakeThumbRow"></div>
+          <button class="btn btn--outline btn--sm" id="btnRetakeGo">Ambil ulang foto ini</button>
+        </div>
+
+      </aside>
+    </div>
+
+    <div class="screen-nav">
+      <button class="btn btn--ghost" data-nav-back>← Kembali</button>
+      <button class="btn btn--primary" data-nav="checkout">Lanjut ke pembayaran →</button>
+    </div>
+  </section>
+
+  <!-- ====================== SCREEN 5: CHECKOUT / PAYMENT ====================== -->
+  <section class="screen" data-screen="checkout">
+    <div class="panel-head">
+      <h2>Selesaikan pembayaran</h2>
+      <p>Cetak struk digital otomatis terbit setelah pembayaran berhasil.</p>
+    </div>
+
+    <div class="checkout-grid">
+
+      <div class="checkout-summary">
+        <h3>Ringkasan pesanan</h3>
+        <div class="order-row">
+          <span>Sesi foto (<span id="sumFrameLayout">1 foto</span>)</span>
+          <span id="sumBasePrice">Rp 0</span>
+        </div>
+        <div class="order-row" id="rowExtraCopy">
+          <span>Cetak tambahan</span>
+          <div class="qty-stepper">
+            <button id="btnQtyMinus">−</button>
+            <span id="qtyValue">0</span>
+            <button id="btnQtyPlus">+</button>
+          </div>
+        </div>
+        <div class="order-row order-row--addon">
+          <label><input type="checkbox" id="addonDigitalHQ"> File digital resolusi tinggi (tanpa watermark)</label>
+          <span id="priceAddonHQ">Rp 0</span>
+        </div>
+        <div class="order-row order-row--addon">
+          <label><input type="checkbox" id="addonEmail"> Kirim ke email</label>
+          <span id="priceAddonEmail">Gratis</span>
+        </div>
+        <div class="order-row order-row--total">
+          <span>Total</span>
+          <span id="sumTotal">Rp 0</span>
+        </div>
+        <label class="field-label">Kode promo</label>
+        <div class="promo-row">
+          <input type="text" id="inputPromo" placeholder="contoh: KWU2026">
+          <button class="btn btn--outline btn--sm" id="btnApplyPromo">Pakai</button>
+        </div>
+        <p class="hint-text" id="promoMsg"></p>
+      </div>
+
+      <div class="checkout-pay">
+        <h3>Metode pembayaran</h3>
+        <div class="pay-methods" id="payMethods">
+          <button class="pay-method is-active" data-method="qris">
+            <span class="pay-method__icon">▦</span> QRIS
+          </button>
+          <button class="pay-method" data-method="ewallet">
+            <span class="pay-method__icon">◈</span> E-Wallet
+          </button>
+          <button class="pay-method" data-method="card">
+            <span class="pay-method__icon">▭</span> Kartu Debit/Kredit
+          </button>
+          <button class="pay-method" data-method="cash">
+            <span class="pay-method__icon">▥</span> Tunai di kasir
+          </button>
+        </div>
+
+        <div class="pay-detail" id="payDetailQris">
+          <div class="qris-box" id="qrisCodeBox"></div>
+          <p class="hint-text" id="qrisRealNotice" hidden>Pindai dengan aplikasi e-wallet atau m-banking apa pun yang mendukung QRIS. Ini QRIS asli usahamu — pembayaran benar-benar masuk ke rekening/akun terdaftar.</p>
+          <p class="hint-text" id="qrisDummyNotice" hidden>⚠️ Ini QR contoh untuk demo, <strong>belum bisa dipakai bayar sungguhan</strong>. Upload gambar QRIS asli usahamu di langkah "Branding" agar QR ini berfungsi untuk transaksi nyata.</p>
+        </div>
+
+        <div class="pay-detail" id="payDetailEwallet" hidden>
+          <div class="ewallet-options">
+            <button class="ewallet-chip is-active" data-wallet="GoPay">GoPay</button>
+            <button class="ewallet-chip" data-wallet="OVO">OVO</button>
+            <button class="ewallet-chip" data-wallet="DANA">DANA</button>
+            <button class="ewallet-chip" data-wallet="ShopeePay">ShopeePay</button>
+          </div>
+          <label class="field-label">Nomor HP terdaftar</label>
+          <input type="tel" id="inputWalletPhone" placeholder="08xxxxxxxxxx">
+        </div>
+
+        <div class="pay-detail" id="payDetailCard" hidden>
+          <label class="field-label">Nomor kartu</label>
+          <input type="text" id="inputCardNumber" placeholder="0000 0000 0000 0000" maxlength="19">
+          <div class="card-row">
+            <div>
+              <label class="field-label">Berlaku hingga</label>
+              <input type="text" id="inputCardExpiry" placeholder="MM/YY" maxlength="5">
+            </div>
+            <div>
+              <label class="field-label">CVV</label>
+              <input type="text" id="inputCardCvv" placeholder="123" maxlength="3">
+            </div>
+          </div>
+        </div>
+
+        <div class="pay-detail" id="payDetailCash" hidden>
+          <p class="hint-text">Tunjukkan kode pesanan ini ke kasir untuk menyelesaikan transaksi tunai.</p>
+          <div class="order-code" id="cashOrderCode">SNB-000000</div>
+        </div>
+
+        <label class="field-label">Email penerima hasil foto</label>
+        <input type="email" id="inputCheckoutEmail" placeholder="nama@email.com">
+
+        <button class="btn btn--primary btn--xl" id="btnPayNow">Bayar Sekarang</button>
+        <p class="hint-text hint-text--muted">Simulasi pembayaran untuk keperluan demo proyek. Siap dihubungkan ke payment gateway sungguhan (lihat README).</p>
+      </div>
+
+    </div>
+
+    <div class="screen-nav">
+      <button class="btn btn--ghost" data-nav-back>← Kembali</button>
+    </div>
+  </section>
+
+  <!-- ====================== SCREEN 6: RESULT ====================== -->
+  <section class="screen" data-screen="result">
+    <div class="result-layout">
+      <div class="result-photo-wrap">
+        <canvas id="resultCanvas"></canvas>
+      </div>
+      <div class="result-side">
+        <p class="result-badge">✓ Pembayaran berhasil</p>
+        <h2>Foto kamu sudah siap!</h2>
+        <p class="hint-text">Pesanan <strong id="resultOrderCode">SNB-000000</strong></p>
+
+        <div class="download-row">
+          <button class="btn btn--primary" id="btnDownloadJpg">Unduh JPG</button>
+          <button class="btn btn--outline" id="btnDownloadPng">Unduh PNG</button>
+        </div>
+
+        <div class="email-row">
+          <input type="email" id="inputResultEmail" placeholder="Kirim ulang ke email…">
+          <button class="btn btn--outline btn--sm" id="btnSendEmail">Kirim</button>
+        </div>
+        <p class="hint-text" id="emailStatusMsg"></p>
+
+        <div class="qr-block">
+          <span class="field-label">Pindai untuk unduh dari HP</span>
+          <div id="resultQrBox" class="result-qr"></div>
+          <p class="hint-text" id="qrResultNotice"></p>
+        </div>
+
+        <button class="btn btn--ghost" id="btnNewSession">Mulai sesi baru →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== SCREEN 7: LAPORAN TRANSAKSI ====================== -->
+  <section class="screen" data-screen="report">
+
+    <!-- Gate PIN — pengaman ringan, bukan keamanan tingkat tinggi -->
+    <div class="report-gate" id="reportGate">
+      <div class="report-gate__box">
+        <p class="welcome__eyebrow">Akses terbatas</p>
+        <h2>Masukkan PIN laporan</h2>
+        <p class="hint-text">PIN ini hanya pengaman ringan untuk demo/operasional sehari-hari, bukan enkripsi tingkat keamanan tinggi. Default PIN bisa diganti di app.js (lihat README).</p>
+        <input type="password" id="inputReportPin" placeholder="••••" maxlength="12" inputmode="numeric">
+        <button class="btn btn--primary" id="btnReportUnlock">Buka Laporan</button>
+        <p class="hint-text" id="reportPinError" style="color:var(--danger);"></p>
+      </div>
+    </div>
+
+    <!-- Isi laporan — tersembunyi sampai PIN benar -->
+    <div id="reportContent" hidden>
+      <div class="panel-head">
+        <h2>Laporan Transaksi</h2>
+        <p>Riwayat seluruh pembayaran yang berhasil, tersimpan di perangkat ini.</p>
+      </div>
+
+      <div class="report-summary">
+        <div class="report-summary__card">
+          <span class="field-label">Total transaksi</span>
+          <strong id="repTotalCount">0</strong>
+        </div>
+        <div class="report-summary__card">
+          <span class="field-label">Total pendapatan</span>
+          <strong id="repTotalRevenue">Rp 0</strong>
+        </div>
+        <div class="report-summary__card">
+          <span class="field-label">Rata-rata / transaksi</span>
+          <strong id="repAvgRevenue">Rp 0</strong>
+        </div>
+        <div class="report-summary__card">
+          <span class="field-label">Metode terbanyak</span>
+          <strong id="repTopMethod">—</strong>
+        </div>
+      </div>
+
+      <div class="report-toolbar">
+        <input type="date" id="reportFilterDate" title="Filter tanggal">
+        <button class="btn btn--outline btn--sm" id="btnReportClearFilter">Tampilkan semua</button>
+        <div class="report-toolbar__spacer"></div>
+        <button class="btn btn--outline btn--sm" id="btnExportCsv">⬇ Export CSV</button>
+        <button class="btn btn--ghost btn--sm" id="btnReportReset">Hapus semua data</button>
+      </div>
+
+      <div class="report-table-wrap">
+        <table class="report-table" id="reportTable">
+          <thead>
+            <tr>
+              <th>Tanggal &amp; Jam</th>
+              <th>Kode Pesanan</th>
+              <th>Layout</th>
+              <th>Metode Bayar</th>
+              <th>Email</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody"></tbody>
+        </table>
+        <p class="hint-text" id="reportEmptyMsg" hidden>Belum ada transaksi tercatat.</p>
+      </div>
+    </div>
+
+    <div class="screen-nav">
+      <button class="btn btn--ghost" id="btnReportLock">🔒 Kunci laporan</button>
+      <button class="btn btn--primary" data-nav="welcome">Selesai →</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ====================== TOAST ====================== -->
+<div class="toast" id="toast"></div>
+
+<!-- ====================== HIDDEN: countdown audio cue (visual only, no asset dependency) ====================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
